@@ -29,6 +29,9 @@
 //#include <GL/glaux.h> //CLM we don't use gluax any more
 //#include "resource.h" //un-needed because we're not touching icons
 
+#pragma comment(lib,"opengl32.lib")
+#pragma comment(lib,"glu32.lib")
+
 //-----------------------------------------------------------------------------
 // FUNCTION POINTERS FOR OPENGL EXTENSIONS
 //-----------------------------------------------------------------------------
