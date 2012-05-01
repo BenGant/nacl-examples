@@ -19,9 +19,6 @@
 
 
 
-#define PPAPI	//Are we using Pepper!
-//#define GLES2_SUPPORT_CLIENT_SIDE_ARRAYS
-
 //leave these dfined for both PPAPI and Win32 compiles, so we get the benefit of some windows functions
 #define STRICT
 #define WIN32_LEAN_AND_MEAN
@@ -50,7 +47,7 @@
 // header file.
 
 
-#include <glext.h> // Your local header file
+#include "glext.h" // Your local header file
 
 // GL_ARB_shader_objects
 PFNGLCREATEPROGRAMOBJECTARBPROC  glCreateProgramObjectARB  = NULL;
@@ -111,12 +108,8 @@ const PPB_OpenGLES2* PPBOpenGLES2 = NULL;
 PP_Resource graphicsContext_;
 PP_Instance appInstance_;	
 
-//GLES2 specific
+//helpful for cross-compiling.
 typedef GLuint GLhandleARB;
-
-
-//#pragma comment(lib,"ppapi_gles2.lib")
-
 
 #endif
 
@@ -152,11 +145,19 @@ struct Vertex
 
 Vertex g_quadVertices[] =
 {
+#ifdef PPAPI
 	// tu,  tv     r    g    b       x     y     z 
 	{ 0.0f,0.0f,  1.0f,1.0f,0.0f, -1.0f,-1.0f, -4.0f },
 	{ 1.0f,0.0f,  1.0f,0.0f,0.0f,  1.0f,-1.0f, -4.0f },
 	{ 1.0f,1.0f,  0.0f,1.0f,0.0f,  1.0f, 1.0f, -4.0f },
 	{ 0.0f,1.0f,  0.0f,0.0f,1.0f, -1.0f, 1.0f, -4.0f },
+#else
+	// tu,  tv     r    g    b       x     y     z 
+	{ 0.0f,0.0f,  1.0f,1.0f,0.0f, -1.0f,-1.0f, 0.0f },
+	{ 1.0f,0.0f,  1.0f,0.0f,0.0f,  1.0f,-1.0f, 0.0f },
+	{ 1.0f,1.0f,  0.0f,1.0f,0.0f,  1.0f, 1.0f, 0.0f },
+	{ 0.0f,1.0f,  0.0f,0.0f,1.0f, -1.0f, 1.0f, 0.0f },
+#endif
 };
 
 GLubyte g_Indices[] = { 0, 1, 2, 0, 2, 3 };
@@ -173,7 +174,10 @@ void initShader(void);
 LRESULT CALLBACK WindowProc(HWND g_hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 void render(void);
 //-----------------------------------------------------------------------------
-int initInstance()
+int WINAPI WinMain(	HINSTANCE hInstance,
+					HINSTANCE hPrevInstance,
+					LPSTR     lpCmdLine,
+					int       nCmdShow )
 {
 	WNDCLASSEX winClass;
 	MSG        uMsg;
@@ -204,7 +208,7 @@ int initInstance()
 	if( g_hWnd == NULL )
 		return E_FAIL;
 
-    ShowWindow( g_hWnd, 1 /*nCmdShow*/);//CLM hard-code this to 1 for hax-scake
+    ShowWindow( g_hWnd, nCmdShow);
 	 
     UpdateWindow( g_hWnd );
 
@@ -362,6 +366,12 @@ void init( void )
 
 	glEnable( GL_TEXTURE_2D );
 	glEnable( GL_DEPTH_TEST );
+
+	glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+
+	glMatrixMode( GL_PROJECTION );
+	glLoadIdentity();
+	gluPerspective( 45.0f, 640.0f / 480.0f, 0.1f, 100.0f);
 #else
 		// Lazily create the Pepper context.
 
@@ -386,12 +396,13 @@ void init( void )
 
 
 	glSetCurrentContextPPAPI(graphicsContext_);
-	glViewport(0,0, 640,480);
+	
 
 	initShader();
 
 	
 #endif
+	glViewport(0,0, 640,480);
 	glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
 
 
@@ -461,6 +472,7 @@ unsigned char *readShaderFile( const char *fileName )
 	return buffer;
 }
 
+#ifdef PPAPI
 #include <vector>
 GLuint LoadShader(GLenum type, char const * source){
 	//postMessage("loading shader");
@@ -496,7 +508,7 @@ GLuint LoadShader(GLenum type, char const * source){
 
 	return shader;
 }
-
+#endif
 //-----------------------------------------------------------------------------
 void initShader( void )
 {
@@ -726,6 +738,7 @@ void render(void* pData, int32_t dataSize)
 {
 #ifndef PPAPI
 	// Clear the screen and the depth buffer
+	glClearColor(0.2,0.2,0.2,1);
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	
     glMatrixMode( GL_MODELVIEW );
@@ -760,6 +773,15 @@ void render(void* pData, int32_t dataSize)
 		glBindTexture( GL_TEXTURE_2D, g_textureID );
 		glInterleavedArrays( GL_T2F_C3F_V3F, 0, g_quadVertices );
 		glDrawArrays( GL_QUADS, 0, 4 );
+	}
+
+	GLenum res= glGetError();
+	if(res)
+	{
+		char str[256];
+		sprintf(&str[0],"%i",res);
+		MessageBox( NULL,  &str[0],"GLERR",MB_OK | MB_ICONEXCLAMATION );
+		return;
 	}
 
 	SwapBuffers( g_hDC );
@@ -817,6 +839,7 @@ void render(void* pData, int32_t dataSize)
 }
 
 
+#ifdef PPAPI
 
 //-----------------------------------------------------------------------------
 static struct PP_Var CStrToVar(const char* str) {
@@ -939,3 +962,5 @@ PP_EXPORT const void* PPP_GetInterface(const char* interface_name) {
 PP_EXPORT void PPP_ShutdownModule() {
 	glTerminatePPAPI();
 }
+
+#endif
