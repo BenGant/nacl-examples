@@ -1,0 +1,12 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+  <PropertyGroup>
+
+    <!-- NaCl SDK Root -->
+
+    <NaClSDKRoot Condition="'$(NaClSDKRoot)' == ''">$(NACL_SDK_ROOT)</NaClSDKRoot>
+    <NaClSDKRoot Condition="'$(NaClSDKRoot)' == ''">&lt;unset&gt;</NaClSDKRoot>
+
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,82 @@
+<!--
+***********************************************************************************************
+(c) 2011 Gavin Pugh http://www.gavpugh.com/ - Released under the open-source zlib license
+***********************************************************************************************
+-->
+
+<!-- Based on script: MSBuild\Microsoft.Cpp\v4.0\Microsoft.Cl.Common.props -->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+  <!-- Compiler defaults -->
+  <ItemDefinitionGroup>
+    <ClCompile>
+
+      <ObjectFileName>$(IntDir)%(FileName).o</ObjectFileName>
+
+      <PreprocessorDefinitions  Condition="'%(ClCompile.PreprocessorDefinitions)'   == ''"></PreprocessorDefinitions>
+      <Warnings                 Condition="'%(ClCompile.Warnings)'                  == ''">NormalWarnings</Warnings>
+      <WarningsAsErrors         Condition="'%(ClCompile.WarningsAsErrors)'          == ''">false</WarningsAsErrors>
+      <EchoCommandLines         Condition="'%(ClCompile.EchoCommandLines)'          == ''">true</EchoCommandLines>
+	  
+      <SystemIncludeDirectories       Condition="'%(ClCompile.SystemIncludeDirectories)'      == ''">$(IncludePath)</SystemIncludeDirectories>
+      <SystemPreprocessorDefinitions  Condition="'%(ClCompile.SystemPreprocessorDefinitions)' == ''">$(NaClDefines)</SystemPreprocessorDefinitions>
+
+      <UserHeaderDependenciesOnly     Condition="'%(ClCompile.UserHeaderDependenciesOnly)' == ''">true</UserHeaderDependenciesOnly>
+
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+  <!-- Compiler defaults - Debug builds -->
+  <ItemDefinitionGroup Condition="$(Configuration) == 'Debug'">
+    <ClCompile>
+      
+      <!-- <OptimizationLevel        Condition="'%(ClCompile.OptimizationLevel)'         == ''">O0</OptimizationLevel>
+      <GenerateDebugInformation Condition="'%(ClCompile.GenerateDebugInformation)'  == ''">true</GenerateDebugInformation> -->
+      
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+  <!-- Compiler defaults - Non-debug builds -->
+  <ItemDefinitionGroup Condition="$(Configuration) != 'Debug'">
+    <ClCompile>
+      
+      <OptimizationLevel        Condition="'%(ClCompile.OptimizationLevel)'         == ''">O3</OptimizationLevel>
+      <GenerateDebugInformation Condition="'%(ClCompile.GenerateDebugInformation)'  == ''">false</GenerateDebugInformation>
+      
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+  <!-- Linker defaults -->
+  <ItemDefinitionGroup>
+    <Link>
+      
+      <OutputFile                 Condition="'%(Link.OutputFile)'                     == ''">$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <AdditionalLibraryDirectories Condition="'%(Link.AdditionalLibraryDirectories)' == ''"></AdditionalLibraryDirectories>
+      <EchoCommandLines           Condition="'%(Link.EchoCommandLines)'               == ''">false</EchoCommandLines>
+
+      <AdditionalDependencies     Condition="'%(Link.AdditionalDependencies)'         == ''"></AdditionalDependencies>
+      <IgnoreAllDefaultLibraries  Condition="'%(Link.IgnoreAllDefaultLibraries)'      == ''">false</IgnoreAllDefaultLibraries>
+      <NaClSystemLibs             Condition="'%(Link.NaClSystemLibs)'                 == ''">c;m;log;gcc</NaClSystemLibs>
+
+      <ReportUndefinedSymbols     Condition="'%(Link.ReportUndefinedSymbols)'         == ''">true</ReportUndefinedSymbols>
+
+      <RPathLink                  Condition="'%(Link.RPathLink)'                      == ''"></RPathLink>
+      <SysRootDir                 Condition="'%(Link.SysRootDir)'                     == ''"></SysRootDir> <!-- TODO -->
+    
+      <SystemLibraryDirectories	  Condition="'%(Link.SystemLibraryDirectories)'       == ''">$(LibraryPath)</SystemLibraryDirectories>
+      
+  </Link>
+  </ItemDefinitionGroup>
+
+  <!-- Librarian defaults -->
+  <ItemDefinitionGroup>
+    <Lib>
+      
+      <OutputFile                 Condition="'%(Lib.OutputFile)'                    == ''">$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <EchoCommandLines           Condition="'%(Lib.EchoCommandLines)'              == ''">false</EchoCommandLines>
+      
+    </Lib>
+  </ItemDefinitionGroup>
+
+</Project>
