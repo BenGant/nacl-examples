@@ -28,7 +28,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-PPAPI|NaCl'">
-    <LocalDebuggerCommandArguments>--incognito --single-process --no-sandbox --register-pepper-plugins=$(TargetPath);application/x-nacl "localhost:5103"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--incognito "localhost:5103"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-NaCl|NaCl'">
