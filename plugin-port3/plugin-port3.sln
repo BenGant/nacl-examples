@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin-port3", "plugin-port3\plugin-port3.vcxproj", "{8F481733-18A7-4299-8ADF-EDD970F73349}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug-PPAPI|NaCl = Debug-PPAPI|NaCl
+		Debug-PPAPI|Win32 = Debug-PPAPI|Win32
+		Debug-Win32|NaCl = Debug-Win32|NaCl
+		Debug-Win32|Win32 = Debug-Win32|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8F481733-18A7-4299-8ADF-EDD970F73349}.Debug-PPAPI|NaCl.ActiveCfg = Debug-NaCl|NaCl
+		{8F481733-18A7-4299-8ADF-EDD970F73349}.Debug-PPAPI|NaCl.Build.0 = Debug-NaCl|NaCl
+		{8F481733-18A7-4299-8ADF-EDD970F73349}.Debug-PPAPI|Win32.ActiveCfg = Debug-PPAPI|Win32
+		{8F481733-18A7-4299-8ADF-EDD970F73349}.Debug-PPAPI|Win32.Build.0 = Debug-PPAPI|Win32
+		{8F481733-18A7-4299-8ADF-EDD970F73349}.Debug-Win32|NaCl.ActiveCfg = Debug-NaCl|NaCl
+		{8F481733-18A7-4299-8ADF-EDD970F73349}.Debug-Win32|NaCl.Build.0 = Debug-NaCl|NaCl
+		{8F481733-18A7-4299-8ADF-EDD970F73349}.Debug-Win32|Win32.ActiveCfg = Debug-Win32|Win32
+		{8F481733-18A7-4299-8ADF-EDD970F73349}.Debug-Win32|Win32.Build.0 = Debug-Win32|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

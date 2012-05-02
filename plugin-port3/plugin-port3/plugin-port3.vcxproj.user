@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-PPAPI|Win32'">
+    <LocalDebuggerCommand>C:\Users\colton\Desktop\chrome_build\chrome-win32\chrome.exe</LocalDebuggerCommand>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-NaCl|Win32'">
+    <LocalDebuggerCommand>C:\Users\colton\Desktop\chrome_build\chrome-win32\chrome.exe</LocalDebuggerCommand>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-PPAPI|NaCl'">
+    <LocalDebuggerCommand>C:\Users\colton\Desktop\chrome_build\chrome-win32\chrome.exe</LocalDebuggerCommand>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-NaCl|NaCl'">
+    <LocalDebuggerCommand>C:\Users\colton\Desktop\chrome_build\chrome-win32\chrome.exe</LocalDebuggerCommand>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Win32|Win32'">
+    <LocalDebuggerCommand>
+    </LocalDebuggerCommand>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Win32|NaCl'">
+    <LocalDebuggerCommand />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-PPAPI|Win32'">
+    <LocalDebuggerCommandArguments>--incognito --single-process --no-sandbox --register-pepper-plugins=$(TargetPath);application/x-nacl "localhost:5103"</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-NaCl|Win32'">
+    <LocalDebuggerCommandArguments>--incognito --single-process --no-sandbox --register-pepper-plugins=$(TargetPath);application/x-nacl "localhost:5103"</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-PPAPI|NaCl'">
+    <LocalDebuggerCommandArguments>--incognito --single-process --no-sandbox --register-pepper-plugins=$(TargetPath);application/x-nacl "localhost:5103"</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-NaCl|NaCl'">
+    <LocalDebuggerCommandArguments>--incognito "localhost:5103"</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerEnvironment>nodosfilewarning</LocalDebuggerEnvironment>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Win32|Win32'">
+    <LocalDebuggerCommandArguments>
+    </LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Win32|NaCl'">
+    <LocalDebuggerCommandArguments />
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+</Project>
