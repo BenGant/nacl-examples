@@ -37,7 +37,7 @@
 
     <ExecutablePath Condition="'$(ExecutablePath)' == ''">$(GccToolsPath);$(PATH);</ExecutablePath>
     <IncludePath Condition="'$(IncludePath)' == ''">$(ToolchainDir)\x86_64-nacl\include; $(ToolchainDir)\x86_64-nacl\include\c++\4.4.3</IncludePath>
-    <LibraryPath Condition="'$(LibraryPath)' == ''"></LibraryPath>
+    <LibraryPath Condition="'$(LibraryPath)' == ''">$(ToolchainDir)\x86_64-nacl\lib</LibraryPath>
 
   </PropertyGroup>
   

@@ -41,7 +41,7 @@
   <ItemDefinitionGroup Condition="$(Configuration) != 'Debug'">
     <ClCompile>
       
-      <OptimizationLevel        Condition="'%(ClCompile.OptimizationLevel)'         == ''">O3</OptimizationLevel>
+      <OptimizationLevel        Condition="'%(ClCompile.OptimizationLevel)'         == ''">O0</OptimizationLevel>
       <GenerateDebugInformation Condition="'%(ClCompile.GenerateDebugInformation)'  == ''">false</GenerateDebugInformation>
       
     </ClCompile>
@@ -51,13 +51,13 @@
   <ItemDefinitionGroup>
     <Link>
       
-      <OutputFile                 Condition="'%(Link.OutputFile)'                     == ''">$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <OutputFile                 Condition="'%(Link.OutputFile)'                     == ''">$(ProjectDir)$(TargetName)_$(NaClArch)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories Condition="'%(Link.AdditionalLibraryDirectories)' == ''"></AdditionalLibraryDirectories>
       <EchoCommandLines           Condition="'%(Link.EchoCommandLines)'               == ''">false</EchoCommandLines>
 
       <AdditionalDependencies     Condition="'%(Link.AdditionalDependencies)'         == ''"></AdditionalDependencies>
       <IgnoreAllDefaultLibraries  Condition="'%(Link.IgnoreAllDefaultLibraries)'      == ''">false</IgnoreAllDefaultLibraries>
-      <NaClSystemLibs             Condition="'%(Link.NaClSystemLibs)'                 == ''">c;m;log;gcc</NaClSystemLibs>
+      <NaClSystemLibs             Condition="'%(Link.NaClSystemLibs)'                 == ''">ppapi_gles2;ppapi_cpp;ppapi</NaClSystemLibs>
 
       <ReportUndefinedSymbols     Condition="'%(Link.ReportUndefinedSymbols)'         == ''">true</ReportUndefinedSymbols>
 

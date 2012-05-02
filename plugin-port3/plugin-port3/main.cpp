@@ -118,8 +118,8 @@ HINSTANCE g_hInstance = NULL;
 
 #include <gles2/gl2.h>
 
-#include "ppapi/utility/completion_callback_factory.h"
-#include <gles2/gl2.h>
+//#include "ppapi/utility/completion_callback_factory.h"
+
 
 static PPB_Messaging* ppb_messaging_interface = NULL;
 static PPB_Var* ppb_var_interface = NULL;

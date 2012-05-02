@@ -99,11 +99,11 @@
   </EnumProperty>
 
   <EnumProperty Name="NaClTargetPlatform" DisplayName="Target Platform" Category="ProjectDefaults">
-    <EnumValue Name="pepper_14" DisplayName="pepper_14" />
-    <EnumValue Name="pepper_15" DisplayName="pepper_15" />
-    <EnumValue Name="pepper_16" DisplayName="pepper_16" />
     <EnumValue Name="pepper_17" DisplayName="pepper_17" />
-	<EnumValue Name="pepper_17" DisplayName="pepper_18" />
+	<EnumValue Name="pepper_18" DisplayName="pepper_18" />
+	<EnumValue Name="pepper_19" DisplayName="pepper_19" />
+	<EnumValue Name="pepper_20" DisplayName="pepper_20" />
+	<EnumValue Name="pepper_21" DisplayName="pepper_21" />
   </EnumProperty>
 
   <!-- Hidden -->

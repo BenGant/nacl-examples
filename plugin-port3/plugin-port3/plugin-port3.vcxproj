@@ -54,6 +54,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
     <NaClArch>x86_64</NaClArch>
+    <NaClTargetPlatform>pepper_18</NaClTargetPlatform>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Win32|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -165,16 +166,14 @@
       <PreprocessorDefinitions>PPAPI;NACL;WIN32;_DEBUG;_WINDOWS;_USRDLL;PLUGINPORT0_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
-      <OptimizationLevel>O0</OptimizationLevel>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>
       </AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\nacl\pepper_18\toolchain\win_x86_newlib\x86_64-nacl\lib</AdditionalLibraryDirectories>
-      <NaClSystemLibs>ppapi_gles2;ppapi_cpp;ppapi</NaClSystemLibs>
-      <OutputFile>$(ProjectDir)$(TargetName)_x86_64$(TargetExt)</OutputFile>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Win32|Win32'">
