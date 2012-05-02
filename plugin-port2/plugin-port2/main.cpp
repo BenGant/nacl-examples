@@ -80,6 +80,7 @@ HINSTANCE g_hInstance = NULL;
 #include <stdio.h>
 #include <sys/stat.h>
 #include <math.h>
+#include <string>
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_module.h"
@@ -96,6 +97,11 @@ HINSTANCE g_hInstance = NULL;
 #include "ppapi/c/ppb_opengles2.h"
 #include "ppapi/c/ppb_graphics_3d.h"
 #include "ppapi/lib/gl/gles2/gl2ext_ppapi.h" 
+#include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/ppb_url_loader.h"
+#include "ppapi/c/ppb_url_request_info.h"
+
+#include "ppapi/utility/completion_callback_factory.h"
 #include <gles2/gl2.h>
 
 static PPB_Messaging* ppb_messaging_interface = NULL;
@@ -103,7 +109,10 @@ static PPB_Var* ppb_var_interface = NULL;
 static PPB_Core* ppb_core_interface = NULL;
 static PPB_Instance* ppb_instance_interface = NULL;
 static PPB_Graphics3D* ppb_g3d_interface = NULL;
-const PPB_OpenGLES2* PPBOpenGLES2 = NULL;
+static PPB_OpenGLES2* PPBOpenGLES2 = NULL;
+static PPB_URLRequestInfo* ppb_urlreq_interface = NULL;
+static PPB_URLLoader* ppb_urlloader_interface = NULL;
+int g_ResourceLoadedCounter = 0;
 
 PP_Resource graphicsContext_;
 PP_Instance appInstance_;	
@@ -111,6 +120,15 @@ PP_Instance appInstance_;
 //helpful for cross-compiling.
 typedef GLuint GLhandleARB;
 
+//-----------------------------------------------------------------------------
+struct fileReqObj
+{
+	PP_Resource urlRequestContext_;
+	PP_Resource urlLoadContext_;
+	PP_CompletionCallback pCallback_;
+	char readBuffer_[128*128*3];
+};
+void readFileFromURL(const char* pURL, void (pCallback)(void* pData, int32_t dataSize));
 #endif
 
 //-----------------------------------------------------------------------------
@@ -326,19 +344,84 @@ LRESULT CALLBACK WindowProc( HWND   g_hWnd,
 
 //prototype header
 void render(void* pData, int32_t dataSize);
-
-int initInstance()
+char* textureData;
+unsigned char* pVSData;
+unsigned char* pPSData;
+//-----------------------------------------------------------------------------
+void loadLoop(void* pData, int32_t dataSize)
 {
+	//if the resources aren't loaded yet, then kick off another callback
+	if(g_ResourceLoadedCounter != 3)
+	{
+		PP_CompletionCallback cc = PP_MakeCompletionCallback(loadLoop, 0);
+	   ppb_g3d_interface->SwapBuffers(graphicsContext_, cc);
+
+		return;
+	}
+
+	//if everything's loaded, then init
 	init();
-	
+
 	//kick off rendering loop here
 	//now that everything's loaded, kick off our first render frame
 	PP_CompletionCallback cc = PP_MakeCompletionCallback(render, 0);
-  int32_t swap_result;
-  swap_result = ppb_g3d_interface->SwapBuffers(graphicsContext_, cc);
-	
+	int32_t swap_result;
+	swap_result = ppb_g3d_interface->SwapBuffers(graphicsContext_, cc);
+}
+//-----------------------------------------------------------------------------
+void load_vsCB(void* pData, int32_t dataSize)
+{
+	if(dataSize <=0)
+		return;
+
+	fileReqObj* pFR = (fileReqObj*) pData;
+
+	pVSData = new unsigned char[dataSize+1];
+	memcpy(pVSData,pFR->readBuffer_,dataSize);
+	pVSData[dataSize]=0;	//null terminate this string
+	delete pFR;	//remove from the heap
+	g_ResourceLoadedCounter++;
+}
+//-----------------------------------------------------------------------------
+void load_psCB(void* pData, int32_t dataSize)
+{
+	if(dataSize <=0)
+		return;
+
+	fileReqObj* pFR = (fileReqObj*) pData;
+
+	pPSData = new unsigned char[dataSize + 1];
+	memcpy(pPSData,pFR->readBuffer_,dataSize);
+	pPSData[dataSize]=0;//null terminate this string
+	delete pFR;	//remove from the heap
+	g_ResourceLoadedCounter++;
+}
+//-----------------------------------------------------------------------------
+void load_textureCB(void* pData, int32_t dataSize)
+{
+	if(dataSize <= 0)
+		return;
+
+	fileReqObj* pFR = (fileReqObj*) pData;
+
+	textureData = new char[dataSize];
+	memcpy(textureData,pFR->readBuffer_,dataSize);
+	delete pFR;	//remove from the heap
+	g_ResourceLoadedCounter++;
+}
+//-----------------------------------------------------------------------------
+int initInstance()
+{
+	readFileFromURL( "vertex_shader_es2.vert",load_vsCB );
+	readFileFromURL( "fragment_shader_es2.frag",load_psCB );
+	readFileFromURL( "test.raw" ,load_textureCB);
+
+	loadLoop(0,0);
+
+
 	return 0;
 }
+
 
 #endif
 
@@ -372,6 +455,16 @@ void init( void )
 	glMatrixMode( GL_PROJECTION );
 	glLoadIdentity();
 	gluPerspective( 45.0f, 640.0f / 480.0f, 0.1f, 100.0f);
+
+
+	textureData = new char[128*128*3];
+	FILE* f = fopen("C:\\Users\\colton\\Desktop\\mainroach.git\\plugin-port2\\plugin-port2\\test.raw" ,"rb");
+	if(f)
+	{
+		fread(&textureData[0], 128*128*3,1,f);
+		fclose(f);
+	}
+
 #else
 		// Lazily create the Pepper context.
 
@@ -400,29 +493,18 @@ void init( void )
 
 	initShader();
 
-	
 #endif
-	glViewport(0,0, 640,480);
-	glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
 
 
-	//CLM note that we don't have an image decoder in the gluax library any more. I converted the test.bmp to test.raw and provided it
-	char img[128*128*3];
-	FILE* f = fopen("C:\\Users\\colton\\Desktop\\mainroach.git\\plugin-port2\\plugin-port2\\test.raw" ,"rb");
-	if(f)
-	{
-		fread(&img[0], 128*128*3,1,f);
-		fclose(f);
+	glGenTextures( 1, &g_textureID );
+
+	glBindTexture( GL_TEXTURE_2D, g_textureID );
+
+	glTexParameteri( GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, 128,128, 0,GL_RGB, GL_UNSIGNED_BYTE, textureData );
 	
-		glGenTextures( 1, &g_textureID );
-
-		glBindTexture( GL_TEXTURE_2D, g_textureID );
-
-		glTexParameteri( GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-		glTexParameteri( GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, 128,128, 0,GL_RGB, GL_UNSIGNED_BYTE, &img[0] );
-	}
 
 #ifdef PPAPI
 		
@@ -438,7 +520,11 @@ void init( void )
 	
 	
 #endif
-	
+
+	delete[] textureData;
+	glViewport(0,0, 640,480);
+	glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+
 }
 
 
@@ -637,11 +723,11 @@ void initShader( void )
 	g_location_testTexture = glGetUniformLocationARB( g_programObj, "testTexture" );
 #else
 	
-	unsigned char *vertexShaderAssembly = readShaderFile( "C:\\Users\\colton\\Desktop\\mainroach.git\\plugin-port2\\plugin-port2\\vertex_shader_es2.vert" );
+	unsigned char *vertexShaderAssembly = pVSData;
 	g_vertexShader = LoadShader(GL_VERTEX_SHADER,(char*)vertexShaderAssembly);
 	delete[] vertexShaderAssembly;
 
-	unsigned char *fragmentShaderAssembly = readShaderFile( "C:\\Users\\colton\\Desktop\\mainroach.git\\plugin-port2\\plugin-port2\\fragment_shader_es2.frag" );
+	unsigned char *fragmentShaderAssembly = pPSData;
 	g_fragmentShader = LoadShader(GL_FRAGMENT_SHADER,(char*)fragmentShaderAssembly);
 	delete[] fragmentShaderAssembly;
 
@@ -660,6 +746,7 @@ void initShader( void )
 
    g_location_MVP = glGetUniformLocation( g_programObj, "a_MVP" );
    g_location_testTexture = glGetUniformLocation ( g_programObj, "s_texture" );
+
 
 #endif
 }
@@ -841,6 +928,8 @@ void render(void* pData, int32_t dataSize)
 
 #ifdef PPAPI
 
+
+
 //-----------------------------------------------------------------------------
 static struct PP_Var CStrToVar(const char* str) {
   if (ppb_var_interface != NULL) {
@@ -932,6 +1021,8 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module a_module_id, PPB_GetInterface g
   ppb_var_interface = (PPB_Var*)(get_browser(PPB_VAR_INTERFACE));
   ppb_instance_interface = (PPB_Instance*)get_browser(PPB_INSTANCE_INTERFACE);
   ppb_core_interface = (PPB_Core*)get_browser(PPB_CORE_INTERFACE);
+  ppb_urlreq_interface= (PPB_URLRequestInfo*)(get_browser(PPB_URLREQUESTINFO_INTERFACE)); 
+  ppb_urlloader_interface = (PPB_URLLoader*)(get_browser(PPB_URLLOADER_INTERFACE_1_0)); 
 
   //CLM needed for GL initalization
   ppb_g3d_interface = (PPB_Graphics3D*)get_browser(PPB_GRAPHICS_3D_INTERFACE);
@@ -963,4 +1054,32 @@ PP_EXPORT void PPP_ShutdownModule() {
 	glTerminatePPAPI();
 }
 
+//-----------------------------------------------------------------------------
+void readFileResp(void* pData, int32_t dataSize)
+{
+	fileReqObj* pFR = (fileReqObj*) pData;
+	//NOTE this function might perform a partial read; We ignore that for the sake of this demo...
+	const unsigned int bufferReadSize = 128*128*3;	//set to this for this demo...
+	ppb_urlloader_interface->ReadResponseBody(pFR->urlLoadContext_, &pFR->readBuffer_[0], bufferReadSize, pFR->pCallback_);
+};
+//-----------------------------------------------------------------------------
+void readFileFromURL(const char* pURL, void (pCallback)(void* pData, int32_t dataSize))
+{
+	fileReqObj* pFR = new fileReqObj;	//create this off the heap
+
+	pFR->pCallback_ = PP_MakeCompletionCallback(pCallback, pFR);
+
+	//	-# Call Create() to create a URLLoader object.
+	pFR->urlLoadContext_ = ppb_urlloader_interface->Create(appInstance_);
+	
+	//* -# Create a <code>URLRequestInfo</code> object and set properties on it.
+	pFR->urlRequestContext_ = ppb_urlreq_interface->Create(appInstance_);
+	ppb_urlreq_interface->SetProperty(pFR->urlRequestContext_, PP_URLREQUESTPROPERTY_URL, CStrToVar(pURL));
+	ppb_urlreq_interface->SetProperty(pFR->urlRequestContext_, PP_URLREQUESTPROPERTY_METHOD, CStrToVar("GET"));
+	
+	//* -# Call Open() with the <code>URLRequestInfo</code> as an argument.
+	PP_CompletionCallback cc = PP_MakeCompletionCallback(readFileResp, pFR);
+	ppb_urlloader_interface->Open(pFR->urlLoadContext_, pFR->urlRequestContext_, cc);
+}
+//-----------------------------------------------------------------------------
 #endif
