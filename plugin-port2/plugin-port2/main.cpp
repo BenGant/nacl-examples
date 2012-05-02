@@ -125,8 +125,9 @@ struct fileReqObj
 {
 	PP_Resource urlRequestContext_;
 	PP_Resource urlLoadContext_;
-	PP_CompletionCallback pCallback_;
+	void (*pCallback_)(void* pData, int32_t dataSize);
 	char readBuffer_[128*128*3];
+	unsigned int dataBufferSize_;
 };
 void readFileFromURL(const char* pURL, void (pCallback)(void* pData, int32_t dataSize));
 #endif
@@ -374,12 +375,10 @@ void load_vsCB(void* pData, int32_t dataSize)
 	if(dataSize <=0)
 		return;
 
-	fileReqObj* pFR = (fileReqObj*) pData;
-
 	pVSData = new unsigned char[dataSize+1];
-	memcpy(pVSData,pFR->readBuffer_,dataSize);
+	memcpy(pVSData,pData,dataSize);
 	pVSData[dataSize]=0;	//null terminate this string
-	delete pFR;	//remove from the heap
+	
 	g_ResourceLoadedCounter++;
 }
 //-----------------------------------------------------------------------------
@@ -388,12 +387,10 @@ void load_psCB(void* pData, int32_t dataSize)
 	if(dataSize <=0)
 		return;
 
-	fileReqObj* pFR = (fileReqObj*) pData;
-
 	pPSData = new unsigned char[dataSize + 1];
-	memcpy(pPSData,pFR->readBuffer_,dataSize);
+	memcpy(pPSData,pData,dataSize);
 	pPSData[dataSize]=0;//null terminate this string
-	delete pFR;	//remove from the heap
+
 	g_ResourceLoadedCounter++;
 }
 //-----------------------------------------------------------------------------
@@ -402,11 +399,10 @@ void load_textureCB(void* pData, int32_t dataSize)
 	if(dataSize <= 0)
 		return;
 
-	fileReqObj* pFR = (fileReqObj*) pData;
 
 	textureData = new char[dataSize];
-	memcpy(textureData,pFR->readBuffer_,dataSize);
-	delete pFR;	//remove from the heap
+	memcpy(textureData,pData,dataSize);
+
 	g_ResourceLoadedCounter++;
 }
 //-----------------------------------------------------------------------------
@@ -457,7 +453,7 @@ void init( void )
 	gluPerspective( 45.0f, 640.0f / 480.0f, 0.1f, 100.0f);
 
 
-	textureData = new char[128*128*3];
+	char* textureData = new char[128*128*3];
 	FILE* f = fopen("C:\\Users\\colton\\Desktop\\mainroach.git\\plugin-port2\\plugin-port2\\test.raw" ,"rb");
 	if(f)
 	{
@@ -1055,19 +1051,51 @@ PP_EXPORT void PPP_ShutdownModule() {
 }
 
 //-----------------------------------------------------------------------------
+void readFileBody(void* pData, int32_t dataSize)
+{
+	fileReqObj* pFR = (fileReqObj*) pData;
+
+	int64_t bytes_received = 0;
+	int64_t total_bytes_to_be_received = 0;
+	ppb_urlloader_interface->GetDownloadProgress(pFR->urlLoadContext_,&bytes_received,&total_bytes_to_be_received);
+
+	if(total_bytes_to_be_received == bytes_received)
+	{
+		pFR->pCallback_(pFR->readBuffer_,total_bytes_to_be_received);
+		ppb_urlloader_interface->Close(pFR->urlLoadContext_);
+		delete pFR;	//remove from the heap
+	}
+	else
+	{
+		//append the data and call again!
+
+
+		//NOTE this function might perform a partial read; We ignore that for the sake of this demo...
+		const unsigned int bufferReadSize = 128*128*3;	//set to this for this demo...
+		PP_CompletionCallback cc = PP_MakeCompletionCallback(readFileBody, pFR);
+		ppb_urlloader_interface->ReadResponseBody(pFR->urlLoadContext_, &pFR->readBuffer_[bytes_received], bufferReadSize, cc);
+	}
+
+}
+
+//-----------------------------------------------------------------------------
 void readFileResp(void* pData, int32_t dataSize)
 {
 	fileReqObj* pFR = (fileReqObj*) pData;
+	pFR->dataBufferSize_ = 0;
+
+
 	//NOTE this function might perform a partial read; We ignore that for the sake of this demo...
 	const unsigned int bufferReadSize = 128*128*3;	//set to this for this demo...
-	ppb_urlloader_interface->ReadResponseBody(pFR->urlLoadContext_, &pFR->readBuffer_[0], bufferReadSize, pFR->pCallback_);
+	PP_CompletionCallback cc = PP_MakeCompletionCallback(readFileBody, pFR);
+	ppb_urlloader_interface->ReadResponseBody(pFR->urlLoadContext_, &pFR->readBuffer_[0], bufferReadSize, cc);
 };
 //-----------------------------------------------------------------------------
 void readFileFromURL(const char* pURL, void (pCallback)(void* pData, int32_t dataSize))
 {
 	fileReqObj* pFR = new fileReqObj;	//create this off the heap
 
-	pFR->pCallback_ = PP_MakeCompletionCallback(pCallback, pFR);
+	pFR->pCallback_ = pCallback;
 
 	//	-# Call Create() to create a URLLoader object.
 	pFR->urlLoadContext_ = ppb_urlloader_interface->Create(appInstance_);
@@ -1076,6 +1104,13 @@ void readFileFromURL(const char* pURL, void (pCallback)(void* pData, int32_t dat
 	pFR->urlRequestContext_ = ppb_urlreq_interface->Create(appInstance_);
 	ppb_urlreq_interface->SetProperty(pFR->urlRequestContext_, PP_URLREQUESTPROPERTY_URL, CStrToVar(pURL));
 	ppb_urlreq_interface->SetProperty(pFR->urlRequestContext_, PP_URLREQUESTPROPERTY_METHOD, CStrToVar("GET"));
+
+	PP_Var pv;
+	pv.padding=0;
+	pv.value.as_bool = PP_TRUE;
+	pv.type = PP_VARTYPE_BOOL;
+	ppb_urlreq_interface->SetProperty(pFR->urlRequestContext_, PP_URLREQUESTPROPERTY_RECORDDOWNLOADPROGRESS, pv);
+	
 	
 	//* -# Call Open() with the <code>URLRequestInfo</code> as an argument.
 	PP_CompletionCallback cc = PP_MakeCompletionCallback(readFileResp, pFR);
