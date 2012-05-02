@@ -1,3 +1,11 @@
+/*
+Colt "MainRoach" McAnlis
+githum.com/mainroach
+
+It's worth noting that these files are provided as-is without warranty or care for best coding practices;
+These files, are, at-best a hack to show off a larger process, and not an attempt to document any specific pepper APIs.
+*/
+
 //-----------------------------------------------------------------------------
 //           Name: ogl_glslang_simple_vs2ps.cpp
 //         Author: Kevin Harris
@@ -126,7 +134,7 @@ struct fileReqObj
 	PP_Resource urlRequestContext_;
 	PP_Resource urlLoadContext_;
 	void (*pCallback_)(void* pData, int32_t dataSize);
-	char readBuffer_[128*128*3];
+	char readBuffer_[128*128*3];//hard-coded. YMMV
 	unsigned int dataBufferSize_;
 };
 void readFileFromURL(const char* pURL, void (pCallback)(void* pData, int32_t dataSize));
@@ -164,6 +172,7 @@ struct Vertex
 
 Vertex g_quadVertices[] =
 {
+	//rather than dealing with perspective matrix math for PPAPI, i simply do a hand translate here.
 #ifdef PPAPI
 	// tu,  tv     r    g    b       x     y     z 
 	{ 0.0f,0.0f,  1.0f,1.0f,0.0f, -1.0f,-1.0f, -4.0f },
@@ -345,6 +354,7 @@ LRESULT CALLBACK WindowProc( HWND   g_hWnd,
 
 //prototype header
 void render(void* pData, int32_t dataSize);
+//We pre-define these data slots. This is not the 'correct' way to do things, but a full async file-loader discussion is beyond the scope of this article series.
 char* textureData;
 unsigned char* pVSData;
 unsigned char* pPSData;
@@ -408,6 +418,7 @@ void load_textureCB(void* pData, int32_t dataSize)
 //-----------------------------------------------------------------------------
 int initInstance()
 {
+	//kick off loads from our files
 	readFileFromURL( "vertex_shader_es2.vert",load_vsCB );
 	readFileFromURL( "fragment_shader_es2.frag",load_psCB );
 	readFileFromURL( "test.raw" ,load_textureCB);
@@ -776,8 +787,13 @@ void shutDown( void )
 
 //-----------------------------------------------------------------------------
 #ifndef PPAPI
+
 void render(void)
 #else
+
+//Since GLES2 doesn't have all the nifty matrix transform functions that GL has, I emulate some of them here for the sake of sanity
+
+
 //from - http://www.opengl.org/wiki/GluPerspective_code
 
 void glhFrustumf2(float *matrix, float left, float right, float bottom, float top,
@@ -943,10 +959,6 @@ static PP_Bool Instance_DidCreate(PP_Instance instance,
 
 	appInstance_ = instance;
 
-	//PP_Var v =  CStrToVar("Hello a World (NEWLIB)");
-  //ppb_messaging_interface->PostMessage(instance,v);
-  //fprintf(stdout,"Hello a World (NEWLIB)");
-
   return PP_TRUE;
 }
 //-----------------------------------------------------------------------------
@@ -962,22 +974,10 @@ static void Instance_DidChangeView(PP_Instance instance,
                                    PP_Resource view_resource) 
 {
 
- 
-  // On first call, create graphics3d resource.
   if(graphicsContext_ ==0)
   {
 	  initInstance();
-  
   } 
-/*	else if (position.size.width != global.width || position.size.height != global.height) 
-	{
-    ppb_g3d_interface->ResizeBuffers(global.graphics3d_id, position.size.width,
-                                                       position.size.height);
-  }
-  */
-  //global.width = position.size.width;
-  //global.height = position.size.height;
-  // Pending completion callbacks actually occur here after exit.
 
 }
 //-----------------------------------------------------------------------------
@@ -993,19 +993,7 @@ static PP_Bool Instance_HandleDocumentLoad(PP_Instance instance,
 }
 //-----------------------------------------------------------------------------
 PP_Bool InputEvent_HandleEvent(PP_Instance instance_id, PP_Resource input_event) {
-  // Handle events here...
-  
- /* PP_InputEvent_Type type = PPBInputEvent->GetType(input_event);
-  switch (type) {
-    case PP_INPUTEVENT_TYPE_MOUSEMOVE:
-      PP_Point point;
-      point = PPBMouseInputEvent->GetPosition(input_event);
-      global.cursor_x = point.x;
-      global.cursor_y = point.y;
-      break;
-    default:
-      break;
-  }*/
+
   return PP_TRUE;
 }
 
@@ -1019,8 +1007,6 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module a_module_id, PPB_GetInterface g
   ppb_core_interface = (PPB_Core*)get_browser(PPB_CORE_INTERFACE);
   ppb_urlreq_interface= (PPB_URLRequestInfo*)(get_browser(PPB_URLREQUESTINFO_INTERFACE)); 
   ppb_urlloader_interface = (PPB_URLLoader*)(get_browser(PPB_URLLOADER_INTERFACE_1_0)); 
-
-  //CLM needed for GL initalization
   ppb_g3d_interface = (PPB_Graphics3D*)get_browser(PPB_GRAPHICS_3D_INTERFACE);
 	if (!glInitializePPAPI(get_browser))
 		return -1;
@@ -1059,6 +1045,7 @@ void readFileBody(void* pData, int32_t dataSize)
 	int64_t total_bytes_to_be_received = 0;
 	ppb_urlloader_interface->GetDownloadProgress(pFR->urlLoadContext_,&bytes_received,&total_bytes_to_be_received);
 
+	//if the entire file is read, then we should be G2G
 	if(total_bytes_to_be_received == bytes_received)
 	{
 		pFR->pCallback_(pFR->readBuffer_,total_bytes_to_be_received);
@@ -1067,13 +1054,10 @@ void readFileBody(void* pData, int32_t dataSize)
 	}
 	else
 	{
-		//append the data and call again!
-
-
-		//NOTE this function might perform a partial read; We ignore that for the sake of this demo...
+		//Because the ReadResponseBody function can do a partial read, we force another read call
 		const unsigned int bufferReadSize = 128*128*3;	//set to this for this demo...
 		PP_CompletionCallback cc = PP_MakeCompletionCallback(readFileBody, pFR);
-		ppb_urlloader_interface->ReadResponseBody(pFR->urlLoadContext_, &pFR->readBuffer_[bytes_received], bufferReadSize, cc);
+		ppb_urlloader_interface->ReadResponseBody(pFR->urlLoadContext_, &pFR->readBuffer_[bytes_received], bufferReadSize - bytes_received, cc);
 	}
 
 }
@@ -1084,8 +1068,6 @@ void readFileResp(void* pData, int32_t dataSize)
 	fileReqObj* pFR = (fileReqObj*) pData;
 	pFR->dataBufferSize_ = 0;
 
-
-	//NOTE this function might perform a partial read; We ignore that for the sake of this demo...
 	const unsigned int bufferReadSize = 128*128*3;	//set to this for this demo...
 	PP_CompletionCallback cc = PP_MakeCompletionCallback(readFileBody, pFR);
 	ppb_urlloader_interface->ReadResponseBody(pFR->urlLoadContext_, &pFR->readBuffer_[0], bufferReadSize, cc);
@@ -1100,16 +1082,16 @@ void readFileFromURL(const char* pURL, void (pCallback)(void* pData, int32_t dat
 	//	-# Call Create() to create a URLLoader object.
 	pFR->urlLoadContext_ = ppb_urlloader_interface->Create(appInstance_);
 	
-	//* -# Create a <code>URLRequestInfo</code> object and set properties on it.
+	//We need to set some specific properties on this url request
 	pFR->urlRequestContext_ = ppb_urlreq_interface->Create(appInstance_);
 	ppb_urlreq_interface->SetProperty(pFR->urlRequestContext_, PP_URLREQUESTPROPERTY_URL, CStrToVar(pURL));
-	ppb_urlreq_interface->SetProperty(pFR->urlRequestContext_, PP_URLREQUESTPROPERTY_METHOD, CStrToVar("GET"));
+	ppb_urlreq_interface->SetProperty(pFR->urlRequestContext_, PP_URLREQUESTPROPERTY_METHOD, CStrToVar("GET"));	//specifies we're a fetch operation
 
 	PP_Var pv;
 	pv.padding=0;
 	pv.value.as_bool = PP_TRUE;
 	pv.type = PP_VARTYPE_BOOL;
-	ppb_urlreq_interface->SetProperty(pFR->urlRequestContext_, PP_URLREQUESTPROPERTY_RECORDDOWNLOADPROGRESS, pv);
+	ppb_urlreq_interface->SetProperty(pFR->urlRequestContext_, PP_URLREQUESTPROPERTY_RECORDDOWNLOADPROGRESS, pv); //specifies we want to get download progress for the file
 	
 	
 	//* -# Call Open() with the <code>URLRequestInfo</code> as an argument.
