@@ -98,13 +98,8 @@
     <EnumValue Name="x86_64" DisplayName="x86 64-bit" />
   </EnumProperty>
 
-  <EnumProperty Name="NaClTargetPlatform" DisplayName="Target Platform" Category="ProjectDefaults">
-    <EnumValue Name="pepper_17" DisplayName="pepper_17" />
-	<EnumValue Name="pepper_18" DisplayName="pepper_18" />
-	<EnumValue Name="pepper_19" DisplayName="pepper_19" />
-	<EnumValue Name="pepper_20" DisplayName="pepper_20" />
-	<EnumValue Name="pepper_21" DisplayName="pepper_21" />
-  </EnumProperty>
+  <StringProperty Name="NaClTargetPlatform" DisplayName="Target Platform" Category="ProjectDefaults" Default="pepper_18">
+  </StringProperty>
 
   <!-- Hidden -->
   <EnumProperty Name="CLRSupport" DisplayName="Common Language Runtime Support"
