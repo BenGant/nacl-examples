@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "udp_ppapi", "client\udp_ppapi.vcxproj", "{086423E7-0FF7-4B8F-8305-B56426E7674B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "udp_server", "server\udp.vcxproj", "{D84663D8-9688-45F9-B1BB-F31052D97885}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|NACL = Debug|NACL
+		Debug|PPAPI = Debug|PPAPI
+		Debug|Win32 = Debug|Win32
+		Release|NACL = Release|NACL
+		Release|PPAPI = Release|PPAPI
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{086423E7-0FF7-4B8F-8305-B56426E7674B}.Debug|NACL.ActiveCfg = Debug|NACL
+		{086423E7-0FF7-4B8F-8305-B56426E7674B}.Debug|NACL.Build.0 = Debug|NACL
+		{086423E7-0FF7-4B8F-8305-B56426E7674B}.Debug|PPAPI.ActiveCfg = Debug|PPAPI
+		{086423E7-0FF7-4B8F-8305-B56426E7674B}.Debug|PPAPI.Build.0 = Debug|PPAPI
+		{086423E7-0FF7-4B8F-8305-B56426E7674B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{086423E7-0FF7-4B8F-8305-B56426E7674B}.Debug|Win32.Build.0 = Debug|Win32
+		{086423E7-0FF7-4B8F-8305-B56426E7674B}.Release|NACL.ActiveCfg = Release|NACL
+		{086423E7-0FF7-4B8F-8305-B56426E7674B}.Release|NACL.Build.0 = Release|NACL
+		{086423E7-0FF7-4B8F-8305-B56426E7674B}.Release|PPAPI.ActiveCfg = Release|PPAPI
+		{086423E7-0FF7-4B8F-8305-B56426E7674B}.Release|PPAPI.Build.0 = Release|PPAPI
+		{086423E7-0FF7-4B8F-8305-B56426E7674B}.Release|Win32.ActiveCfg = Release|Win32
+		{086423E7-0FF7-4B8F-8305-B56426E7674B}.Release|Win32.Build.0 = Release|Win32
+		{D84663D8-9688-45F9-B1BB-F31052D97885}.Debug|NACL.ActiveCfg = Debug|Win32
+		{D84663D8-9688-45F9-B1BB-F31052D97885}.Debug|NACL.Build.0 = Debug|Win32
+		{D84663D8-9688-45F9-B1BB-F31052D97885}.Debug|PPAPI.ActiveCfg = Debug|Win32
+		{D84663D8-9688-45F9-B1BB-F31052D97885}.Debug|PPAPI.Build.0 = Debug|Win32
+		{D84663D8-9688-45F9-B1BB-F31052D97885}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D84663D8-9688-45F9-B1BB-F31052D97885}.Debug|Win32.Build.0 = Debug|Win32
+		{D84663D8-9688-45F9-B1BB-F31052D97885}.Release|NACL.ActiveCfg = Release|NACL
+		{D84663D8-9688-45F9-B1BB-F31052D97885}.Release|NACL.Build.0 = Release|NACL
+		{D84663D8-9688-45F9-B1BB-F31052D97885}.Release|PPAPI.ActiveCfg = Release|PPAPI
+		{D84663D8-9688-45F9-B1BB-F31052D97885}.Release|PPAPI.Build.0 = Release|PPAPI
+		{D84663D8-9688-45F9-B1BB-F31052D97885}.Release|Win32.ActiveCfg = Release|Win32
+		{D84663D8-9688-45F9-B1BB-F31052D97885}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

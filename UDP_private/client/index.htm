@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hello, World!</title>
+  <script type="text/javascript">
+  
+  // Check for the various File API support.
+	if (window.File && window.FileReader && window.FileList && window.Blob) {
+	  // Great success! All the File APIs are supported.
+	} else {
+	  alert('The File APIs are not fully supported in this browser.');
+	}
+
+
+      helloWorldModule = null;  // Global application object.
+      statusText = 'NO-STATUS';
+
+      // Indicate success when the NaCl module has loaded.
+      function moduleDidLoad()
+      {
+          helloWorldModule = document.getElementById('hello_world');
+          console.log('SUCCESS');
+      }
+
+      // Handle a message coming from the NaCl module.
+      function handleMessage(message_event)
+      {
+          console.log(message_event.data);
+      }
+
+      // If the page loads before the Native Client module loads, then set the
+      // status message indicating that the module is still loading.  Otherwise,
+      // do not change the status message.
+      function pageDidLoad()
+      {
+          if (helloWorldModule == null)
+          {
+              console.log('LOADING...');
+          } else
+          {
+              // It's possible that the Native Client module onload event fired
+              // before the page's onload event.  In this case, the status message
+              // will reflect 'SUCCESS', but won't be displayed.  This call will
+              // display the current message.
+              console.log("");
+          }
+      }
+
+  
+  </script>
+</head>
+<body onload="pageDidLoad()">
+
+<h1>Native Client Simple Module</h1>
+
+  <div id="listener">
+    <script type="text/javascript">
+        var listener = document.getElementById('listener')
+        listener.addEventListener('load', moduleDidLoad, true);
+        listener.addEventListener('message', handleMessage, true);
+    </script>
+
+	
+	<embed name="nacl_module"
+           id="blob_load"
+           width=200  height=200
+           src="blob.nmf"
+           type="application/x-nacl" />
+		   
+		   
+		   
+<input type="file" id="files" name="file" />
+<output id="list"></output>
+
+<script>
+  function handleFileSelect(evt) {
+    var files = evt.target.files; // FileList object
+
+	var f = files[0];
+	var objectURL = window.webkitURL.createObjectURL(f);
+	var naclObj = document.getElementById('blob_load');
+	naclObj.postMessage(objectURL);
+	
+  }
+  document.getElementById('files').addEventListener('change', handleFileSelect, false);
+</script>
+
+    
+	<div id='list'></div>
+  </div>
+</body>
+</html>
