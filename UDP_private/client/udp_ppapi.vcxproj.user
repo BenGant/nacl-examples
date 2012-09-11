@@ -17,7 +17,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|NACL'">
     <LocalDebuggerWorkingDirectory>$(ProjectDir)</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>--allow-nacl-socket-api=127.0.0.1 --enable-nacl-debug --no-sandbox --load-extension="C:\nacl\examples\src\UDP_private\client"  --enable-nacl</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--allow-nacl-socket-api=127.0.0.1 --enable-nacl-debug --no-sandbox --load-extension="C:\Users\colton\Desktop\colt\_mainroach.git\nacl-examples\UDP_private\client"  --enable-nacl</LocalDebuggerCommandArguments>
     <LocalDebuggerCommand>C:\Users\colton\AppData\Local\Google\Chrome SxS\Application\chrome.exe</LocalDebuggerCommand>
     <LocalDebuggerEnvironment>NACLLOG=c:\nacl\nacl.log
 NACL_EXE_STDERR=c:\nacl\nacl_err.log</LocalDebuggerEnvironment>
