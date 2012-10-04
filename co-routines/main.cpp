@@ -24,7 +24,6 @@
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
 #include "ppapi/c/ppb_var.h"
-#include "ppapi/c/ppb_var_array_buffer.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppp_instance.h"
@@ -32,8 +31,6 @@
 #include "ppapi/c/pp_input_event.h"
 
 #include "ppapi/c/pp_completion_callback.h"
-#include "ppapi/c/ppb_url_loader.h"
-#include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 static PPB_Messaging* ppb_messaging_interface = NULL;
@@ -56,21 +53,21 @@ namespace coroutine
 
 	static jmp_buf mainLabel, childLabel;
 	//-----------------------------------
-	void BlockPseudoThread(void) {
+	void Block(void) {
 		if (!setjmp(childLabel) )
 		{	
 			longjmp(mainLabel,1);
 		} 
 	}
 	//-----------------------------------
-	void ResumePseudoThread(void) {
+	void Resume(void) {
 		if (!setjmp(mainLabel) )
 		{	
 			longjmp(childLabel,1);
 		} 
 	}
 	//-----------------------------------
-	void CreatePseudoThread(void (*start)(void)) {
+	void Create(void (*start)(void)) {
 		if (!setjmp(mainLabel) )
 		{	
    		alloca(kStackSize);
@@ -81,25 +78,27 @@ namespace coroutine
 	//-----------------------------------
 	void update(void* foo, int bar) 
 	{
-		ResumePseudoThread();
+		Resume();
 	}
 	//-----------------------------------
 	PP_CompletionCallback updateCallback = PP_MakeCompletionCallback(update, 0);
 	//-----------------------------------------------------------------------------
 	void Flush(void) {
 		  ppb_core_interface->CallOnMainThread(0, updateCallback, 0);
-		  BlockPseudoThread();
+		  Block();
 	}
 	
 }
 
+char fileIOBuffer[1024];
 //-----------------------------------------------------------------------------
 void onFileLoaded(void* pData, int32_t dataSize)
 {
 	// process data returned from file loading
+	strcpy(&fileIOBuffer[0], "I AM A CHEESEBURGER");
 
 	//once all the data has been read, we can regain execution control
-	coroutine::ResumePseudoThread();
+	coroutine::Resume();
 }
 
 //-----------------------------------------------------------------------------
@@ -111,9 +110,10 @@ void blockingURLRead()
 	ppb_core_interface->CallOnMainThread(0, fileLoadedCB, 0);
 
 	//now that the async call has been kicked off to chrome, we yield execution control back to chrome so it can service it
-	coroutine::BlockPseudoThread();
+	coroutine::Block();
 
-	printf("I AM A CHEEZEBURGER");
+	//once 'onFileLoaded' has been called, we resume control here.
+	printf(&fileIOBuffer[0]);// AKA DO SOMETHING WITH THE FILE DATA YOU LOADED!
 }
 
 //-----------------------------------------------------------------------------
@@ -137,7 +137,7 @@ void userUpdate(void) {
 void init( void )
 {
 	//called when the app boots. Allows user to own their control loop
-	coroutine::CreatePseudoThread(userUpdate);
+	coroutine::Create(userUpdate);
 }
 
 //-----------------------------------------------------------------------------
